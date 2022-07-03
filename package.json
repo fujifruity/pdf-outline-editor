@@ -1,7 +1,7 @@
 {
-  "name": "pdf-outline",
+  "name": "pdf-outline-editor",
   "version": "0.1.0",
-  "homepage": "https://fujifruity.github.io/pdf-outline",
+  "homepage": "https://fujifruity.github.io/pdf-outline-editor",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
