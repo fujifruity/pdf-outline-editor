@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/pdf-outline-editor/static/css/main.b6daf3a3.css",
-    "main.js": "/pdf-outline-editor/static/js/main.a35b6d8b.js",
+    "main.css": "/pdf-outline-editor/static/css/main.ecce2239.css",
+    "main.js": "/pdf-outline-editor/static/js/main.f1dcc971.js",
     "static/js/787.5701a465.chunk.js": "/pdf-outline-editor/static/js/787.5701a465.chunk.js",
     "static/media/lets-create-this.png": "/pdf-outline-editor/static/media/lets-create-this.3ba3fc9146558b845d3a.png",
     "index.html": "/pdf-outline-editor/index.html",
-    "main.b6daf3a3.css.map": "/pdf-outline-editor/static/css/main.b6daf3a3.css.map",
-    "main.a35b6d8b.js.map": "/pdf-outline-editor/static/js/main.a35b6d8b.js.map",
+    "main.ecce2239.css.map": "/pdf-outline-editor/static/css/main.ecce2239.css.map",
+    "main.f1dcc971.js.map": "/pdf-outline-editor/static/js/main.f1dcc971.js.map",
     "787.5701a465.chunk.js.map": "/pdf-outline-editor/static/js/787.5701a465.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.b6daf3a3.css",
-    "static/js/main.a35b6d8b.js"
+    "static/css/main.ecce2239.css",
+    "static/js/main.f1dcc971.js"
   ]
 }
