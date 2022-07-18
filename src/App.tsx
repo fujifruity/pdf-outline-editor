@@ -1,4 +1,4 @@
-import React, { SyntheticEvent, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import letsCreateThis from './lets-create-this.png';
 import './App.css';
 import { outlinePdfFactory } from "../node_modules/@lillallol/outline-pdf/dist/index.esm.js";
@@ -11,7 +11,7 @@ const App = () => (
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css" />
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css" />
       <h1>PDF Outline Editor</h1>
-      <img src={letsCreateThis} alt="highlight what's outline" />
+      <img src={letsCreateThis} alt="showing what is outline" />
       <OutlineForm />
       <a href="https://github.com/fujifruity/pdf-outline" target="_blank" rel="noopener noreferrer" >
         Go to github
@@ -30,52 +30,68 @@ const OutlineForm = () => {
 `
   const [outline, setOutline] = useState(defaultOutline);
   const [pdfOutline, setPdfOutline] = useState<PDFOutline>();
+  const [filename, setFilename] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [height, setHeight] = useState(30);
+
+  const handleLoad = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const pdfOutline = await PDFOutline.CreateAsync(e.target.files[0])
+      const pdf = await e.target.files[0].arrayBuffer()
+      const pdfOutline = await PDFOutline.CreateAsync(pdf)
       setPdfOutline(pdfOutline)
       setOutline(pdfOutline.readOutline())
+      setFilename(e.target.files[0].name)
       setErrorMsg('')
     }
   }
-  const handleSubmit = () => {
-    pdfOutline?.writeOutline(outline).catch((error) => {
-      if (error instanceof Error) setErrorMsg(error.message)
+
+  const textArea = useRef<HTMLTextAreaElement>(null);
+  const handleInput = () => {
+    setOutline(textArea.current?.value ?? '')
+  };
+  // Update textarea's height when its content is modified.
+  useEffect(() => {
+    setHeight(textArea?.current?.scrollHeight ?? 30)
+  });
+
+  const errorMsgArea = useRef<HTMLParagraphElement>(null);
+  const handleWrite = () => {
+    pdfOutline?.writeOutline(outline, filename).catch((error) => {
+      if (error instanceof Error) {
+        setErrorMsg(error.message)
+        errorMsgArea.current?.scrollIntoView({ behavior: "smooth" })
+      }
     })
   }
-  const handleTextAreaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    e.target.style.height = '30px'
-    e.target.style.height = e.target.scrollHeight + 'px';
-    setOutline(e.target.value ?? '')
-  };
 
   return (
     <div >
       <label htmlFor="load" >1. Load PDF</label>
-      <input name="load" type="file" accept=".pdf" onChange={handleChange} />
+      <input name="load" type="file" accept=".pdf" onChange={handleLoad} />
       <label htmlFor="edit" >2. Edit outline</label>
-      <textarea name="edit" className="text-area" value={outline} onInput={handleTextAreaInput}  ></textarea>
+      <textarea
+        ref={textArea}
+        name="edit"
+        className="text-area"
+        value={outline}
+        style={{ height: height }}
+        onChange={handleInput} ></textarea>
       <label htmlFor="write" >3. Write to PDF</label>
-      <button name="write" onClick={handleSubmit} >Write</button>
-      <p className='error-msg'>{errorMsg}</p>
+      <button name="write" onClick={handleWrite} >Write</button>
+      <p ref={errorMsgArea} className='error-msg'>{errorMsg}</p>
     </div>
   )
 }
 
-class PDFOutline {
+export class PDFOutline {
   pdfDoc: PDFDocument;
-  file: File;
-  private constructor(pdfDoc: PDFDocument, file: File) {
+
+  private constructor(pdfDoc: PDFDocument) {
     this.pdfDoc = pdfDoc
-    this.file = file
   }
-  public static CreateAsync = async (f: File) => {
-    const arrayBuffer = await f.arrayBuffer()
-    const pdfDoc = await PDFDocument.load(
-      new Uint8Array(arrayBuffer)
-    )
-    return new PDFOutline(pdfDoc, f);
+  public static CreateAsync = async (pdf: string | Uint8Array | ArrayBuffer) => {
+    const pdfDoc = await PDFDocument.load(pdf)
+    return new PDFOutline(pdfDoc);
   };
 
   getDict = (ref: PDFRef) => this.pdfDoc.context.lookup(ref) as PDFDict;
@@ -104,16 +120,19 @@ class PDFOutline {
   }
 
   readOutline() {
-    return this.getOutlineItemRefs().map(outlineItemRef => {
-      const outline = this.getDict(outlineItemRef)
-      const title = outline.get(PDFName.Title) as PDFString
-      const dest = outline.get(PDFName.of('Dest')) as PDFArray
-      const destRef = dest.get(0) as PDFRef
-      const pageRefs = this.getPageRefs()
-      const pageNum = pageRefs.indexOf(destRef) + 1
-      const depth = this.getDepth(outlineItemRef)
-      return `${pageNum}|${'-'.repeat(depth)}|${title.decodeText()}`
-    }).join('\n')
+    return this.getOutlineItemRefs()
+      .map(ref => {
+        const outline = this.getDict(ref)
+        const title = outline.get(PDFName.Title) as PDFString
+        const dest = outline.get(PDFName.of('Dest')) as PDFArray
+        const destRef = dest.get(0) as PDFRef
+        const pageNum = this.getPageRefs().indexOf(destRef) + 1
+        const depth = this.getDepth(ref)
+        return ({ pageNum: pageNum, depth: depth, title: title })
+      }).sort((a, b) => a.pageNum - b.pageNum)
+      .map(item =>
+        `${item.pageNum}|${'-'.repeat(item.depth)}|${item.title.decodeText()}`
+      ).join('\n')
   }
 
   deleteOutline() {
@@ -123,26 +142,24 @@ class PDFOutline {
   }
 
   /**
-   * 
    * @param outline String representation of the outline
    */
-  async writeOutline(outline: string) {
+  async writeOutline(outline: string, filename: string) {
     const outlinePdf = outlinePdfFactory(pdfLib);
     const outlinedPdf: Uint8Array = await outlinePdf({ outline, pdf: this.pdfDoc }).then(pdfDoc => pdfDoc.save());
-    const filename = this.file.name.replace(/\.pdf$/, '.outline.pdf')
-    this.download(outlinedPdf, filename)
+    const newFilename = filename.replace(/\.pdf$/, '.outline.pdf')
+    this.download(outlinedPdf, newFilename)
   }
 
-  // https://stackoverflow.com/a/30832210/5380904
   download(data: BlobPart, filename: string) {
-    var file = new Blob([data]);
-    var a = document.createElement("a"),
-      url = URL.createObjectURL(file);
+    const file = new Blob([data]);
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(file);
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
-    setTimeout(function () {
+    setTimeout(() => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     }, 0);
