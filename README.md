@@ -2,11 +2,11 @@
 
 (Hosted on [Github-Pages](https://fujifruity.github.io/pdf-outline-editor))
 
-An web app allows you to edit PDF's "document outline" (below). It never uploads PDF file to anywhere because it processes PDF in-browser.
+A web app that creates and modifies PDF outline (table of contents).  It never uploads PDF to anywhere because it processes PDF in-browser.
 
 ![PDF document outline](src/lets-create-this.png)
 
 ## Note
 
-- Cannot read outline written by another app in most cases, since outline data structure is very specific to editor app, such as Adobe Acrobat DC.
-- Uses [outline-pdf](https://github.com/lillallol/outline-pdf) for writing outline, [pdf-lib](https://pdf-lib.js.org/) for reading outline.
+- It may fail to read outline written by another app since outline data structure is very specific to editor app such as Adobe Acrobat DC.
+- It uses [outline-pdf](https://github.com/lillallol/outline-pdf) for writing outline, [pdf-lib](https://pdf-lib.js.org/) for reading outline.

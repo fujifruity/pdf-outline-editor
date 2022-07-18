@@ -8,13 +8,13 @@ const App = () => (
     <header className="App-header">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css" />
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css" />
-      <h1>PDF Outline Editor</h1>
-      <img src={letsCreateThis} alt="showing what is outline" />
-      <OutlineForm />
-      <a href="https://github.com/fujifruity/pdf-outline" target="_blank" rel="noopener noreferrer" >
-        Go to github
-      </a>
     </header>
+    <h1>PDF Outline Editor</h1>
+    <img src={letsCreateThis} alt="showing what is outline" />
+    <OutlineForm />
+    <a href="https://github.com/fujifruity/pdf-outline-editor/tree/master" target="_blank" rel="noopener noreferrer" >
+      Go to github
+    </a>
   </div>
 );
 
@@ -63,14 +63,14 @@ const OutlineForm = () => {
   }
 
   return (
-    <div >
+    <div className="OutlineForm" >
       <label htmlFor="load" >1. Load PDF</label>
       <input name="load" type="file" accept=".pdf" onChange={handleLoad} />
       <label htmlFor="edit" >2. Edit outline</label>
+      <span>Line format: "page number | depth | title"</span>
       <textarea
         ref={textArea}
         name="edit"
-        className="text-area"
         value={outline}
         style={{ height: height }}
         onChange={handleInput} ></textarea>

@@ -1,18 +1,22 @@
 .App {
   text-align: center;
+  margin: 1em;
 }
 
-.App-header {
-  display: flex;
+.App>* {
+  margin: 1em 0em;
+}
+
+.OutlineForm {
+  max-width: 100%;
+  margin: auto;
+  width: 30em;
   flex-direction: column;
   align-items: center;
+  display: flex;
+  justify-content: center;
 }
 
-.App-header>* {
-  margin-top: 1em;
-}
-
-.text-area {
-  width: auto;
-  height: 133px;
+.OutlineForm>input {
+  max-width: 100%;
 }
