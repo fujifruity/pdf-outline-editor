@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { render, screen } from '@testing-library/react';
 import App from './App';
-import { PDFOutline } from './App';
+import { PDFOutline } from './PDFOutline';
 
 // test('renders learn react link', () => {
 //   render(<App />);
